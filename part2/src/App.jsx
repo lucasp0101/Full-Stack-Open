@@ -19,16 +19,20 @@ const App = () => {
   ]
 
   const points = new Array(anecdotes.length).fill(0)
-
-  let [votes, setVotes] = useState(points)
+  
+  const [votes, setVotes] = useState(points)
+  const [selected, setSelected] = useState(0)
+  const [mostVotes, setMostVotes] = useState(0)
 
   const onClickVote = () => {
     const copy = [...votes]
     copy[selected] += 1
     setVotes(copy)
+    if (copy[selected] > copy[mostVotes]) {
+      setMostVotes(selected)
+    }
   }
    
-  const [selected, setSelected] = useState(0)
 
   const onClickNext = () => {
     const random = Math.floor(Math.random() * (anecdotes.length-1))
@@ -41,6 +45,8 @@ const App = () => {
       <p>has {votes[selected]} votes</p>
       <Button onClick={onClickNext} text={"Random anectdote"} />
       <Button onClick={onClickVote} text={"Vote"} />
+      <h1>Anecdote with most votes</h1>
+      {anecdotes[mostVotes]} <br />
     </div>
   )
 }
