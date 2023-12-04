@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import serverComs from './modules/serverComs'
 
 
 const Input = ({ namee, onChange }) => {
@@ -25,7 +26,6 @@ const Form = ({ onSubmit, children }) => {
 }
 
 const ContactList = ({ contactList }) => {
-  console.log('contacts', contactList)
   return (
     <div>
       {contactList.map(contact => (
@@ -39,25 +39,21 @@ const ContactList = ({ contactList }) => {
 }
 
 const App = () => {
-  const [contacts, setContacts] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]) 
+  const [contacts, setContacts] = useState([]) 
 
   // Fetch contacts from server
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/contacts')
+    serverComs.getContactsFromServer()
       .then(response => {
-        console.log('response', response)
-        setContacts(response.data)
-        setShownContacts(response.data)
-        }
-      )
+        setContacts(response)
+        setShownContacts(response)
+      })
+      .catch(error => {
+        alert('Error: ' + error)
+      })
     },
-    [])
+    []
+  )
   
   // New contact form logic
   const [newName, setNewName] = useState('')
@@ -65,14 +61,35 @@ const App = () => {
   
   const onSubmitNewContact = (event) => {
     event.preventDefault()
+
+    // Check both fields are filled out
+    if (newName === '' || newNumber === '') {
+      alert('Please fill out all fields')
+      return
+    }
+
+    // Check if contact already exists
+    //TODO: Change number to already existing contact
+    if (contacts.some(contact => contact.name === newName)) {
+      alert(`${newName} is already added to phonebook`)
+      return
+    }
+
     const contactObject = {
       name: newName,
       number: newNumber,
     }
-    setContacts(contacts.concat(contactObject))
-    console.log('contacts', contacts)
-    setNewName('')
-    setNewNumber('')
+
+    // Send new contact to server
+    serverComs.addContactToServer(contactObject)
+      .then(response => {
+        setContacts(contacts.concat(response))
+        setShownContacts(contacts.concat(response))
+      })
+      .catch(error => {
+        alert('Error: ' + error)
+      }
+    )
   }
   
   const handlePersonChange = (event) => {
@@ -84,16 +101,10 @@ const App = () => {
   }
   
   // Search filter logic
-  const [shownContacts, setShownContacts] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ])
+  const [shownContacts, setShownContacts] = useState([])
 
   const handleFilterChange = (event) => {
     const filter = event.target.value
-    console.log('filter', filter)
     setShownContacts(contacts.filter(
       contact => contact.name.toLowerCase().includes(filter.toLowerCase())
     ))
