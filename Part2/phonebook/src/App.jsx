@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import serverComs from './modules/serverComs'
 
+const Button = ({text, onClick}) => {
+  return (
+    <button onClick={onClick}>{text}</button>
+  )
+}
 
 const Input = ({ namee, onChange }) => {
   return (
@@ -25,12 +29,12 @@ const Form = ({ onSubmit, children }) => {
   )
 }
 
-const ContactList = ({ contactList }) => {
+const ContactList = ({ contactList, onDeleteHandler }) => {
   return (
     <div>
       {contactList.map(contact => (
         <div key={contact.name}>
-          {contact.name}: {contact.number}
+          {contact.name}: {contact.number} <Button text="delete" onClick={() => onDeleteHandler(contact.id)}/>
         </div>
         )
       )}
@@ -99,6 +103,19 @@ const App = () => {
   const handleNumberChange = (event) => {
     setNewNumber(event.target.value)
   }
+
+  // Delete contact logic
+  const handleDeleteContact = (id) => {
+    serverComs.deleteContactFromServer(id)
+      .then(response => {
+        setContacts(contacts.filter(contact => contact.id !== id))
+        setShownContacts(contacts.filter(contact => contact.id !== id))
+      })
+      .catch(error => {
+        alert('Error: ' + error)
+      }
+    )
+  }
   
   // Search filter logic
   const [shownContacts, setShownContacts] = useState([])
@@ -109,11 +126,11 @@ const App = () => {
       contact => contact.name.toLowerCase().includes(filter.toLowerCase())
     ))
   }
-    
+  
   return (
     <div>
     <h2>Phonebook</h2>
-    <ContactList contactList={shownContacts} />
+    <ContactList contactList={shownContacts} onDeleteHandler={handleDeleteContact} />
 
     <h2>Filter contacts</h2>
     <input onChange={handleFilterChange} />

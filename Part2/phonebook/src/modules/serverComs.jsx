@@ -13,4 +13,10 @@ const addContactToServer = (contactObject) => {
         .then(response => response.data)
 }
 
-export default { getContactsFromServer, addContactToServer }
+const deleteContactFromServer = (id) => {
+    return axios
+        .delete(`${baseUrl}/${id}`)
+        .then(response => response.data)
+}
+
+export default { getContactsFromServer, addContactToServer, deleteContactFromServer}
