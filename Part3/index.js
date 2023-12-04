@@ -35,3 +35,25 @@ let contacts = [
 app.get('/api/persons', (request, response) => {
     response.json(contacts)
 }) 
+
+app.get('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const contact = contacts.find(contact => contact.id === id)
+    if (contact) {
+        response.json(contact)
+    } else {
+        response.status(404).end()
+    }
+})
+
+app.delete('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    contacts = contacts.filter(contact => contact.id !== id)
+
+    response.status(204).end()
+})
+
+app.get('/info', (request, response) => {
+    response.send(`<p>Phonebook has info for ${contacts.length} people</p>
+    <p>${new Date()}</p>`)
+})
