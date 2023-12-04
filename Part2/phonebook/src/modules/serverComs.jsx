@@ -19,4 +19,16 @@ const deleteContactFromServer = (id) => {
         .then(response => response.data)
 }
 
-export default { getContactsFromServer, addContactToServer, deleteContactFromServer}
+const updateContactOnServer = (contactObject) => {
+    console.log('contactObject', contactObject)
+    return axios
+        .put(`${baseUrl}/${contactObject.id}`, contactObject)
+        .then(response => response.data)
+}
+
+export default { 
+    getContactsFromServer, 
+    addContactToServer, 
+    deleteContactFromServer, 
+    updateContactOnServer
+}

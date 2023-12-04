@@ -72,10 +72,25 @@ const App = () => {
       return
     }
 
-    // Check if contact already exists
-    //TODO: Change number to already existing contact
+    // Check if contact already exists, if so, ask to update number
     if (contacts.some(contact => contact.name === newName)) {
-      alert(`${newName} is already added to phonebook`)
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)){
+        
+        // Copy contact object and update number
+        const contactObject = {...contacts.find(contact => contact.name === newName), number: newNumber}
+
+        // Send updated contact to server
+        serverComs.updateContactOnServer(contactObject)
+          .then(response => {
+            setContacts(contacts.map(contact => contact.id !== contactObject.id ? contact : response))
+            setShownContacts(contacts.map(contact => contact.id !== contactObject.id ? contact : response))
+          })
+          .catch(error => {
+            alert('Error: ' + error)
+          }
+        )
+      }
+
       return
     }
 
