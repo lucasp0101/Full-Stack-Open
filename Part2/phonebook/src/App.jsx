@@ -1,6 +1,44 @@
 import { useState, useEffect } from 'react'
 import serverComs from './modules/serverComs'
 
+const Notification = ({ message }) => {
+  const notificationStyle = {
+    color: 'green',
+    fontStyle: 'italic',
+    fontSize: 16,
+    borderStyle: 'solid',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10
+  }
+
+  if (message === null) {
+    return null
+  }
+  return <div className="notification" style={notificationStyle}> 
+      {message}
+    </div>
+}
+
+const ErrorNotification = ({ message }) => {
+  const notificationStyle = {
+    color: 'red',
+    fontStyle: 'italic',
+    fontSize: 16,
+    borderStyle: 'solid',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10
+  }
+
+  if (message === null) {
+    return null
+  }
+  return <div className="error" style={notificationStyle}>
+      {message}
+    </div>
+}
+
 const Button = ({text, onClick}) => {
   return (
     <button onClick={onClick}>{text}</button>
@@ -43,7 +81,9 @@ const ContactList = ({ contactList, onDeleteHandler }) => {
 }
 
 const App = () => {
-  const [contacts, setContacts] = useState([]) 
+  const [contacts, setContacts] = useState([])
+  const [notificationMessage, setNotification] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   // Fetch contacts from server
   useEffect(() => {
@@ -86,7 +126,11 @@ const App = () => {
             setShownContacts(contacts.map(contact => contact.id !== contactObject.id ? contact : response))
           })
           .catch(error => {
-            alert('Error: ' + error)
+            console.log('error', error)
+            setErrorMessage(`Information of ${contactObject.name} has already been removed from server`)
+            setTimeout(
+              () => setErrorMessage(null),
+              2000)
           }
         )
       }
@@ -104,6 +148,12 @@ const App = () => {
       .then(response => {
         setContacts(contacts.concat(response))
         setShownContacts(contacts.concat(response))
+
+        // Show a notification for 2 seconds
+        setNotification('Contact added')
+        setTimeout(
+          () => setNotification(null),
+          2000)
       })
       .catch(error => {
         alert('Error: ' + error)
@@ -122,9 +172,17 @@ const App = () => {
   // Delete contact logic
   const handleDeleteContact = (id) => {
     serverComs.deleteContactFromServer(id)
-      .then(response => {
+      .then(() => {
         setContacts(contacts.filter(contact => contact.id !== id))
         setShownContacts(contacts.filter(contact => contact.id !== id))
+
+        // Show a notification for 2 seconds
+        setNotification('Contact deleted')
+        setTimeout(
+          () => setNotification(null), 
+          2000
+        )
+
       })
       .catch(error => {
         alert('Error: ' + error)
@@ -144,6 +202,8 @@ const App = () => {
   
   return (
     <div>
+    <Notification message={notificationMessage} />
+    <ErrorNotification message={errorMessage} />
     <h2>Phonebook</h2>
     <ContactList contactList={shownContacts} onDeleteHandler={handleDeleteContact} />
 
