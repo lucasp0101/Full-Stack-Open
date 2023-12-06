@@ -17,29 +17,6 @@ app.use(morgan('tiny'));
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 })
-/*
-let contacts = [
-    { 
-        name: "Arto Hellas", 
-        number: "040-123456",
-        id: 1
-    },
-    { 
-        name: "Ada Lovelace", 
-        number: "39-44-5323523",
-        id: 2
-    },
-    { 
-        name: "Dan Abramov", 
-        number: "12-43-234345",
-        id: 3
-    },
-    { 
-        name: "Mary Poppendieck", 
-        number: "39-23-6423122",
-        id: 4
-    }
-]*/
 
 app.get('/api/persons', (request, response) => {
     database.fetchAllContacts()
@@ -53,7 +30,7 @@ app.get('/api/persons', (request, response) => {
 }) 
 
 // Get contact by id
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
     console.log(id)
     database.fetchContactById(id)
@@ -65,27 +42,11 @@ app.get('/api/persons/:id', (request, response) => {
             response.status(404).end()
         })
         .catch(error => {
-            console.log(error)
-            response.status(500).end()
+            next(error)
         })
 })
 
-// Delete contact by id
-app.delete('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-
-    // Delete contact from database
-    database.deleteContact(id)
-        .then(() => {
-            response.status(204).end()
-        })
-        .catch(error => {
-            console.log(error)
-            response.status(404).end()
-        })
-})
-
-// Add/Update contact
+// Add contact
 app.post('/api/persons', (request, response) => {
     const body = request.body
     const name = body.name
@@ -122,7 +83,6 @@ app.post('/api/persons', (request, response) => {
     database.addContact(contact)
         .then(contact => {
             response.json(contact)
-            contacts = contacts.concat(contact)
         })
         .catch(error => {
             console.log(error)
@@ -130,7 +90,22 @@ app.post('/api/persons', (request, response) => {
         })
 })
 
-app.put('/api/persons/:id', (request, response) => {
+// Delete contact by id
+app.delete('/api/persons/:id', (request, response, next) => {
+    const id = request.params.id
+
+    // Delete contact from database
+    database.deleteContact(id)
+        .then(() => {
+            response.status(204).end()
+        })
+        .catch(error => {
+            next(error)
+        })
+})
+
+// Update contact
+app.put('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
     const body = request.body
     const name = body.name
@@ -155,8 +130,7 @@ app.put('/api/persons/:id', (request, response) => {
             response.status(200).end()
         })
         .catch(error => {
-            console.log(error)
-            response.status(500).end()
+            next(error)
         })
 })
 
@@ -164,3 +138,18 @@ app.get('/info', (request, response) => {
     response.send(`<p>Phonebook has info for ${contacts.length} people</p>
     <p>${new Date()}</p>`)
 })
+
+// Error handling
+const errorHandler = (error, request, response, next) => {
+    console.error("uauauau", error.message)
+    
+    if (error.name === 'CastError') {
+        return response.status(400).send({ 
+            error: 'malformatted id' 
+        })
+    }
+    
+    next(error)
+}
+
+app.use(errorHandler)
