@@ -122,8 +122,9 @@ const App = () => {
         // Send updated contact to server
         serverComs.updateContactOnServer(contactObject)
           .then(response => {
-            setContacts(contacts.map(contact => contact.id !== contactObject.id ? contact : response))
-            setShownContacts(contacts.map(contact => contact.id !== contactObject.id ? contact : response))
+            // If response code is 200, update contact list
+            setContacts(contacts.map(contact => contact.id !== contactObject.id ? contact : contactObject))
+            setShownContacts(contacts.map(contact => contact.id !== contactObject.id ? contact : contactObject))
           })
           .catch(error => {
             console.log('error', error)
@@ -199,7 +200,6 @@ const App = () => {
       contact => contact.name.toLowerCase().includes(filter.toLowerCase())
     ))
   }
-  
   return (
     <div>
     <Notification message={notificationMessage} />
