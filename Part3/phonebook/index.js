@@ -47,36 +47,14 @@ app.get('/api/persons/:id', (request, response, next) => {
 })
 
 // Add contact
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
     const name = body.name
     const number = body.number
 
-    // Check parameters
-    if (!name) {
-        return response.status(400).json({ 
-            error: 'name missing' 
-        })
-    }
-
-    if (!number) {
-        return response.status(400).json({ 
-            error: 'number missing' 
-        })
-    }
-
-    /*
-    if (contacts.find(contact => contact.name === name)) {
-        return response.status(400).json({ 
-            error: 'contact already present' 
-        })
-    }
-    */
-
     const contact = {
         name: name,
         number: number,
-        id: Math.floor(Math.random() * 1000000)
     }
 
     // Add contact to database
@@ -85,8 +63,7 @@ app.post('/api/persons', (request, response) => {
             response.json(contact)
         })
         .catch(error => {
-            console.log(error)
-            response.status(404).end()
+            next(error)
         })
 })
 
@@ -146,6 +123,11 @@ const errorHandler = (error, request, response, next) => {
     if (error.name === 'CastError') {
         return response.status(400).send({ 
             error: 'malformatted id' 
+        })
+    }
+    else if (error.name === 'ValidationError') {
+        return response.status(400).json({ 
+            error: error.message 
         })
     }
     
