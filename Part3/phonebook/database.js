@@ -1,6 +1,5 @@
-const contact = require('./models/contact');
 const Contact = require('./models/contact')
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const fetchAllContacts = () => {
     return Contact.find({})
@@ -19,7 +18,7 @@ const addContact = (contact) => {
 }
 
 const deleteContact = (id) => {
-    return contact.findByIdAndDelete(id)
+    return Contact.findByIdAndDelete(id)
 }
 
 const updateContact = (id, name, number) => {

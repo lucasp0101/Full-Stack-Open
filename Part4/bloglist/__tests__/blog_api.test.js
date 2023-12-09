@@ -28,7 +28,6 @@ const initialBlogs = [
   }
 ]
 
-
 beforeEach(async () => {
   await Blog.deleteMany({})
   let BlogObject = new Blog(initialBlogs[0])
@@ -135,6 +134,39 @@ test('missing url property returns 400 Bad Request', async () => {
     .post('/api/blogs')
     .send(newBlog)
     .expect(400)
+})
+
+test('deleting a blog post', async () => {
+  const response = await api.get('/api/blogs')
+  const blog = response.body[0]
+
+  await api
+    .delete(`/api/blogs/${blog.id}`)
+    .send({ id: blog.id })
+    .expect(204)
+
+  const newResponse = await api.get('/api/blogs')
+  expect(newResponse.body.length).toBe(initialBlogs.length - 1)
+})
+
+test('updating a blog post', async () => {
+  const response = await api.get('/api/blogs')
+  const blogToUpdate = response.body[0]
+
+  const updatedBlog = {
+    ...blogToUpdate,
+    likes: blogToUpdate.likes + 1
+  }
+
+  await api
+    .put(`/api/blogs/${blogToUpdate.id}`)
+    .send(updatedBlog)
+    .expect(200)
+
+  const newResponse = await api.get('/api/blogs')
+  const updatedBlogInDb = newResponse.body.find(blog => blog.id === blogToUpdate.id)
+
+  expect(updatedBlogInDb.likes).toBe(blogToUpdate.likes + 1)
 })
 
 
