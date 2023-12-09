@@ -26,7 +26,7 @@ describe('when there is initially one user in db', () => {
       password: 'salainen',
     }
 
-    await api
+    const response = await api
       .post('/api/users')
       .send(newUser)
       .expect(201)
@@ -37,5 +37,78 @@ describe('when there is initially one user in db', () => {
 
     const usernames = usersAtEnd.map(u => u.username)
     expect(usernames).toContain(newUser.username)
+
+    expect(response.body.username).toBe(newUser.username)
+    expect(response.body.name).toBe(newUser.name)
+  })
+
+  test('creation fails with invalid password', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'testuser',
+      name: 'Test User',
+      password: 'sa', // Invalid password (less than 3 characters)
+    }
+
+    const response = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+
+    const usernames = usersAtEnd.map(u => u.username)
+    expect(usernames).not.toContain(newUser.username)
+
+    expect(response.body.error).toBe('Password must be at least 3 characters long')
+  })
+
+  test('creation fails with invalid username', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'a', // Invalid username (less than 3 characters)
+      name: 'Test User',
+      password: 'password',
+    }
+
+    const response = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+
+    const usernames = usersAtEnd.map(u => u.username)
+    expect(usernames).not.toContain(newUser.username)
+
+    expect(response.body.error).toBe('User validation failed: username: Path `username` (`a`) is shorter than the minimum allowed length (3).')
+  })
+
+  
+  test('creation fails with duplicate username', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'root', // Duplicate username
+      name: 'Test User',
+      password: 'password',
+    }
+
+    const response = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+
+    expect(response.body.error).toBe('Username must be unique')
   })
 })

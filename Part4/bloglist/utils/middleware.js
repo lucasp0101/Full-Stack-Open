@@ -19,6 +19,9 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).send({ error: error.message })
+  } else if (error.name === 'MongoServerError' && error.code === 11000) {
+    // Assume the only possible duplicate key error is for username
+    return response.status(400).send({ error: 'Username must be unique' })
   }
 
   next(error)
