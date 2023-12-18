@@ -1,8 +1,9 @@
-/*
-  Router for /api/blogs
-*/
+const jwt = require('jsonwebtoken')
+const config = require('../utils/config')
+const logger = require('../utils/logger')
 
 const { Blog } = require('../models/blog')
+const { User } = require('../models/user')
 
 const blogRouter = require('express').Router()
 
@@ -15,9 +16,24 @@ blogRouter.get('/', async (request, response, next) => {
 
 // Create a new blog post
 blogRouter.post('/', async (request, response, next) => {
-  const blog = new Blog(request.body)
+  logger.info(request)
+  
+  const decodedToken = jwt.verify(request.token, config.SECRET)
+
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'Token missing or invalid' })
+  }
+  const user = await User.findById(decodedToken.id)
+
+  const blog = new Blog({
+    ...request.body,
+    user: user._id
+  })
 
   const savedBlog = await blog.save()
+  user.blogs = user.blogs.concat(savedBlog._id)
+  await user.save()
+
   response.status(201).json(savedBlog)
 })
 

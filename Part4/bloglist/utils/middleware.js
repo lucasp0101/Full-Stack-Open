@@ -4,6 +4,7 @@ const requestLogger = (request, response, next) => {
   info('Method:', request.method)
   info('Path:', request.path)
   info('Body:', request.body)
+  info('authorization:', request.token)
   info('---')
   next()
 }
@@ -24,11 +25,28 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error: 'Username must be unique' })
   }
 
+  console.error(error)
+
   next(error)
+}
+
+
+
+const getTokenFrom = (request, response, next) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    // Return the token without the 'bearer ' prefix
+    request.token = authorization.substring(7)
+  } else {
+    request.token = null
+  }
+
+  next()
 }
 
 module.exports = {
   requestLogger,
   unknownEndpoint,
-  errorHandler
+  errorHandler,
+  getTokenFrom
 }

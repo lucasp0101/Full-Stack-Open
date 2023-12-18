@@ -28,6 +28,8 @@ const initialBlogs = [
   }
 ]
 
+let token = ''
+
 beforeEach(async () => {
   await Blog.deleteMany({})
   let BlogObject = new Blog(initialBlogs[0])
@@ -36,6 +38,22 @@ beforeEach(async () => {
   await BlogObject.save()
   BlogObject = new Blog(initialBlogs[2])
   await BlogObject.save()
+})
+
+beforeAll(async () => {
+
+  const reponseRegisterQuery = await api.post('/api/users').send({
+    username: 'root',
+    password: 'test',
+    name: 'root'
+  })
+
+  const responseLoginQuery = await api.post('/api/login').send({
+    username: 'root',
+    password: 'test'
+  })
+
+  token = responseLoginQuery.body.token
 })
 
 test('blogs are returned as json', async () => {
@@ -73,13 +91,13 @@ test('blog posts have id property', async () => {
 test('creating a new blog post', async () => {
   const newBlog = {
     title: 'New Blog Post',
-    author: 'Jane Smith',
+    author: 'your-username',
     url: 'http://example.com',
     likes: 0
   }
-
   await api
     .post('/api/blogs')
+    .set('authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(201)
     .expect('Content-Type', /application\/json/)
@@ -100,6 +118,7 @@ test('missing likes property defaults to 0', async () => {
 
   await api
     .post('/api/blogs')
+    .set('authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(201)
     .expect('Content-Type', /application\/json/)
@@ -119,6 +138,7 @@ test('missing title property returns 400 Bad Request', async () => {
 
   await api
     .post('/api/blogs')
+    .set('authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(400)
 })
@@ -132,6 +152,7 @@ test('missing url property returns 400 Bad Request', async () => {
 
   await api
     .post('/api/blogs')
+    .set('authorization', `Bearer ${token}`)
     .send(newBlog)
     .expect(400)
 })
@@ -142,6 +163,7 @@ test('deleting a blog post', async () => {
 
   await api
     .delete(`/api/blogs/${blog.id}`)
+    .set('authorization', `Bearer ${token}`)
     .send({ id: blog.id })
     .expect(204)
 
@@ -160,6 +182,7 @@ test('updating a blog post', async () => {
 
   await api
     .put(`/api/blogs/${blogToUpdate.id}`)
+    .set('authorization', `Bearer ${token}`)
     .send(updatedBlog)
     .expect(200)
 
@@ -168,9 +191,6 @@ test('updating a blog post', async () => {
 
   expect(updatedBlogInDb.likes).toBe(blogToUpdate.likes + 1)
 })
-
-
-
 
 afterAll(async () => {
   await mongoose.connection.close()
