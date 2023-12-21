@@ -3,8 +3,22 @@ const baseUrl = 'http://localhost:3003/api/blogs'
 
 let TOKEN = null
 
+// TODO: refactor this to work with async instead of then
 const getAll = () => {
   const request = axios.get(baseUrl)
+  return request.then(response => response.data)
+}
+
+const newBlog = (newBlog) => {
+  const request = axios.post(
+    baseUrl, 
+    JSON.stringify(newBlog),
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${TOKEN}`}
+    })
+
   return request.then(response => response.data)
 }
 
@@ -12,4 +26,4 @@ const setToken = (token) => {
   TOKEN = token
 }
 
-export default { getAll, setToken }
+export default { getAll, newBlog, setToken }
