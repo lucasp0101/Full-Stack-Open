@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useImperativeHandle, useRef, useRef } from 'react'
 
 import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
@@ -7,6 +7,26 @@ import Notification from './components/Notification'
 
 import blogService from './services/blogs'
 import loginService from './services/login'
+
+const Togglable = (props) => {
+  const [visible, setVisible] = useState(false)
+
+  const hideWhenVisible = { display: visible ? 'none' : '' }
+  const showWhenVisible = { display: visible ? '' : 'none' }
+
+  const toggleVisibility = () => setVisible(!visible)
+
+  return <div>
+    <div style={hideWhenVisible}>
+      <button onClick={toggleVisibility}> {props.buttonLabel} </button>
+    </div>
+
+    <div style={showWhenVisible}> 
+      {props.children}
+      <button onClick={toggleVisibility}> cancel </button> 
+    </div>
+  </div>
+}
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -17,6 +37,7 @@ const App = () => {
   const [newTitle, setNewTitle] = useState('')
   const [newAuthor, setNewAuthor] = useState('')
   const [newURL, setNewURL] = useState('')
+  const blogFormRef = useRef()
 
   const [notification, setNotification] = useState("null")
 
@@ -101,17 +122,21 @@ const App = () => {
   return (
     <div>
       {notification === null ? <></> : <Notification message = {notification}/>}
+
       <h2>blogs</h2>
       {blogs.map(blog =>
         <Blog key={blog.id} blog={blog} />
       )}
-      <br />
+
       <div>
         {user === null ? 
           <LoginForm handleLogin={handleLogin} setUsername={setUsername} setPassword={setPassword}/> : 
+
           <div>
             <p>{user.name} logged in</p>
-            <NewBlogForm handleSubmit={handleNewBlog} setNewTitle={setNewTitle} setNewAuthor={setNewAuthor} setNewURL={setNewURL}/>
+            <Togglable buttonLabel='New Blog'>
+              <NewBlogForm handleSubmit={handleNewBlog} setNewTitle={setNewTitle} setNewAuthor={setNewAuthor} setNewURL={setNewURL}/>
+            </Togglable>
             <button type="button" onClick={handleLogout}>Logout</button>
           </div>
         }
