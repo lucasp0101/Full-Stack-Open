@@ -46,7 +46,9 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )
+    ).catch(() => {
+      setNotification("Couldn't connect to server")
+    })
   }, [])
 
   // Get the saved user from local storage if there is one
@@ -113,13 +115,39 @@ const App = () => {
     }
   }
 
+  const handleLike = async (initBlog) => {
+    const newBlog = {
+      ...initBlog, 
+      likes: initBlog.likes + 1
+    }
+    try {
+      const result = await blogService.updateBlog(newBlog)
+      console.log(result)
+      if(result){
+        // Possible fix for the future, the order of the blogs changes after the update
+        // This would some kind of sorting of the blogs that get shown
+        setBlogs(blogs.filter((blog) => blog.id != initBlog.id).concat(newBlog))
+        setNotification(`Blog: ${result.title} updated.`)
+        setTimeout(
+          () => setNotification(null),
+          2000)
+      }
+    } catch (exception) {
+      console.log(exception)
+      setNotification(`Error when updating the blog: ${exception}`)
+      setTimeout(
+        () => setNotification(null),
+        2000)
+    }
+  }
+
   return (
     <div>
       {notification === null ? <></> : <Notification message = {notification}/>}
 
       <h2>blogs</h2>
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
+        <Blog key={blog.id} blog={blog} handleLike={handleLike} />
       )}
 
       <div>

@@ -1,10 +1,10 @@
 import { useState } from "react"
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, handleLike }) => {
   const styleSection = {
     'border': '2px solid',
     'display': 'flex',
-    'justify-content': 'center',
+    'justifyContent': 'center',
     'width': 'fit-content',
     'margin': '12px'
   }
@@ -23,7 +23,9 @@ const Blog = ({ blog }) => {
         <div style={styleContent}>
           {blog.title} <button onClick={toggleDetail}>Hide</button><br/>
           {blog.author} <br/>
-          {blog.likes} <button>Like</button><br/>
+          {blog.likes} <button onClick={
+            () => handleLike({...blog})
+            }>Like</button><br/>
           {blog.url} <br/>
         </div>
       </div>
