@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 
+import {cloneDeep} from 'lodash'
+
 import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
 import NewBlogForm from './components/NewBlogForm'
@@ -44,10 +46,11 @@ const App = () => {
 
   // Load all the blogs from the backend on the first render
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    ).catch(() => {
-      setNotification("Couldn't connect to server")
+    blogService.getAll().then(blogs => {
+        setBlogs( blogs.sort((blogA, blogB) => blogB.likes - blogA.likes) )
+      }
+    ).catch((exception) => {
+      setNotification(`Couldn't connect to server: ${exception}`)
     })
   }, [])
 
@@ -126,7 +129,7 @@ const App = () => {
       if(result){
         // Possible fix for the future, the order of the blogs changes after the update
         // This would some kind of sorting of the blogs that get shown
-        setBlogs(blogs.filter((blog) => blog.id != initBlog.id).concat(newBlog))
+        setBlogs(blogs.filter((blog) => blog.id != initBlog.id).concat(newBlog).sort((blogA, blogB) => blogB.likes - blogA.likes))
         setNotification(`Blog: ${result.title} updated.`)
         setTimeout(
           () => setNotification(null),
@@ -141,18 +144,40 @@ const App = () => {
     }
   }
 
+  const handleDelete = async (blogToDelete) => {
+    const result = window.confirm(`Do you really want to delete blog "${blogToDelete.title}"`);
+    if (result){
+      try {
+        const response = await blogService.deleteBlog(blogToDelete.id)
+        setNotification("Blog deleted")
+        setBlogs(blogs.filter((blog) => blogToDelete.id != blog.id).sort((blogA, blogB) => blogB.likes - blogA.likes))
+        setTimeout(() => setNotification(null), 2000)
+      }
+      catch (exception) {
+        console.log(exception)  
+      }
+    }
+  }
+
   return (
     <div>
       {notification === null ? <></> : <Notification message = {notification}/>}
-
       <h2>blogs</h2>
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} handleLike={handleLike} />
+        <Blog 
+          key={blog.id} 
+          blog={blog} 
+          handleLike={handleLike} 
+          handleDelete={handleDelete} 
+          currentUser={user ? user.username : null}/>
       )}
 
       <div>
         {user === null ? 
-          <LoginForm handleLogin={handleLogin} setUsername={setUsername} setPassword={setPassword}/> : 
+          <LoginForm 
+            handleLogin={handleLogin} 
+            setUsername={setUsername} 
+            setPassword={setPassword}/> : 
 
           <div>
             <p>{user.name} logged in</p>

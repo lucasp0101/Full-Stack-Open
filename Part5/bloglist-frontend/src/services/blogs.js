@@ -38,8 +38,21 @@ const updateBlog = async (newBlog) => {
   return request.then(response => response.data)
 }
 
+const deleteBlog = (id) => {
+  const request = axios.delete(
+    baseUrl.concat(`/${id}`),
+    {
+      headers: {
+        "Authorization": `Bearer ${TOKEN}`
+      }
+    }
+  )
+
+  return request.then(response => response.status)
+}
+
 const setToken = (token) => {
   TOKEN = token
 }
 
-export default { getAll, newBlog, setToken, updateBlog }
+export default { getAll, newBlog, setToken, updateBlog, deleteBlog }
