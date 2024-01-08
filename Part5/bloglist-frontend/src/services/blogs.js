@@ -11,26 +11,26 @@ const getAll = () => {
 
 const newBlog = (newBlog) => {
   const request = axios.post(
-    baseUrl, 
+    baseUrl,
     JSON.stringify(newBlog),
     {
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${TOKEN}`}
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${TOKEN}` }
     })
 
   return request.then(response => response.data)
 }
 
 const updateBlog = async (newBlog) => {
-  console.log(newBlog);
+  console.log(newBlog)
   const request = axios.put(
     baseUrl.concat(`/${newBlog.id}`),
     JSON.stringify(newBlog),
     {
       headers :{
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${TOKEN}`
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${TOKEN}`
       }
     }
   )
@@ -43,7 +43,7 @@ const deleteBlog = (id) => {
     baseUrl.concat(`/${id}`),
     {
       headers: {
-        "Authorization": `Bearer ${TOKEN}`
+        'Authorization': `Bearer ${TOKEN}`
       }
     }
   )

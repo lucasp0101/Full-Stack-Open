@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState } from 'react'
+import PropTypes from 'prop-types'
 
 const Blog = ({ blog, handleLike, handleDelete, currentUser }) => {
   const styleSection = {
@@ -23,9 +24,9 @@ const Blog = ({ blog, handleLike, handleDelete, currentUser }) => {
           {blog.title} <button onClick={toggleDetail}>Hide</button><br/>
           {blog.author} <br/>
           {blog.likes} <button onClick={
-            () => handleLike({...blog})
-            }>Like</button><br/>
-          {blog.url} 
+            () => handleLike({ ...blog })
+          }>Like</button><br/>
+          {blog.url}
           <br/>
           {/*Only show the delete button if the current user is the creator of the blog*/}
           {blog.user === currentUser ? <button onClick={() => handleDelete(blog)}>Delete post</button> : <></>}
@@ -42,6 +43,12 @@ const Blog = ({ blog, handleLike, handleDelete, currentUser }) => {
       {blog.author === currentUser ? <button onClick={() => handleDelete(blog)}>Delete post</button> : <></>}
     </div>
   )
+}
+
+Blog.propTypes = {
+  blog: PropTypes.object.isRequired,
+  handleLike: PropTypes.func.isRequired,
+  handleDelete: PropTypes.func.isRequired,
 }
 
 export default Blog

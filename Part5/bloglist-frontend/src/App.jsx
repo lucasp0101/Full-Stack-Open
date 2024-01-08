@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 
-import {cloneDeep} from 'lodash'
+import { cloneDeep } from 'lodash'
 
 import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
@@ -10,6 +10,7 @@ import Notification from './components/Notification'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
+// eslint-disable-next-line react/display-name
 const Togglable = forwardRef((props, refs) => {
   const [visible, setVisible] = useState(false)
 
@@ -19,7 +20,7 @@ const Togglable = forwardRef((props, refs) => {
   const toggleVisibility = () => setVisible(!visible)
 
   useImperativeHandle(refs, () => {
-    return {toggleVisibility}  
+    return { toggleVisibility }
   })
 
   return <div>
@@ -27,9 +28,9 @@ const Togglable = forwardRef((props, refs) => {
       <button onClick={toggleVisibility}> {props.buttonLabel} </button>
     </div>
 
-    <div style={showWhenVisible}> 
+    <div style={showWhenVisible}>
       {props.children}
-      <button onClick={toggleVisibility}> cancel </button> 
+      <button onClick={toggleVisibility}> cancel </button>
     </div>
   </div>
 })
@@ -47,8 +48,8 @@ const App = () => {
   // Load all the blogs from the backend on the first render
   useEffect(() => {
     blogService.getAll().then(blogs => {
-        setBlogs( blogs.sort((blogA, blogB) => blogB.likes - blogA.likes) )
-      }
+      setBlogs( blogs.sort((blogA, blogB) => blogB.likes - blogA.likes) )
+    }
     ).catch((exception) => {
       setNotification(`Couldn't connect to server: ${exception}`)
     })
@@ -56,7 +57,7 @@ const App = () => {
 
   // Get the saved user from local storage if there is one
   useEffect(() => {
-    const loggedUser = window.localStorage.getItem('loggedUser') 
+    const loggedUser = window.localStorage.getItem('loggedUser')
     if (loggedUser) {
       const user = JSON.parse(loggedUser)
       setUser(user)
@@ -78,15 +79,15 @@ const App = () => {
       setPassword('')
       blogService.setToken(user.token)
 
-      window.localStorage.setItem('loggedUser', JSON.stringify(user)) 
+      window.localStorage.setItem('loggedUser', JSON.stringify(user))
 
-      console.log("Logged in succesfully")
-    } 
+      console.log('Logged in succesfully')
+    }
     catch (exception) {
       console.log('Wrong credentials')
     }
 
-    console.log("Logging in with: ", username, " ", password)
+    console.log('Logging in with: ', username, ' ', password)
   }
 
   const handleLogout = (event) => {
@@ -104,11 +105,11 @@ const App = () => {
       setBlogs(blogs.concat(result))
       setNotification(`New blog: ${result.title} created.`)
       blogFormRef.current.toggleVisibility()
-      
+
       setTimeout(
         () => setNotification(null),
         2000)
-    
+
     }catch (exception) {
       console.log(exception)
       setNotification(`Error when creating the new blog: ${exception}`)
@@ -120,7 +121,7 @@ const App = () => {
 
   const handleLike = async (initBlog) => {
     const newBlog = {
-      ...initBlog, 
+      ...initBlog,
       likes: initBlog.likes + 1
     }
     try {
@@ -129,7 +130,7 @@ const App = () => {
       if(result){
         // Possible fix for the future, the order of the blogs changes after the update
         // This would some kind of sorting of the blogs that get shown
-        setBlogs(blogs.filter((blog) => blog.id != initBlog.id).concat(newBlog).sort((blogA, blogB) => blogB.likes - blogA.likes))
+        setBlogs(blogs.filter((blog) => blog.id !== initBlog.id).concat(newBlog).sort((blogA, blogB) => blogB.likes - blogA.likes))
         setNotification(`Blog: ${result.title} updated.`)
         setTimeout(
           () => setNotification(null),
@@ -145,16 +146,16 @@ const App = () => {
   }
 
   const handleDelete = async (blogToDelete) => {
-    const result = window.confirm(`Do you really want to delete blog "${blogToDelete.title}"`);
+    const result = window.confirm(`Do you really want to delete blog "${blogToDelete.title}"`)
     if (result){
       try {
         const response = await blogService.deleteBlog(blogToDelete.id)
-        setNotification("Blog deleted")
-        setBlogs(blogs.filter((blog) => blogToDelete.id != blog.id).sort((blogA, blogB) => blogB.likes - blogA.likes))
+        setNotification('Blog deleted')
+        setBlogs(blogs.filter((blog) => blogToDelete.id !== blog.id).sort((blogA, blogB) => blogB.likes - blogA.likes))
         setTimeout(() => setNotification(null), 2000)
       }
       catch (exception) {
-        console.log(exception)  
+        console.log(exception)
       }
     }
   }
@@ -164,20 +165,20 @@ const App = () => {
       {notification === null ? <></> : <Notification message = {notification}/>}
       <h2>blogs</h2>
       {blogs.map(blog =>
-        <Blog 
-          key={blog.id} 
-          blog={blog} 
-          handleLike={handleLike} 
-          handleDelete={handleDelete} 
+        <Blog
+          key={blog.id}
+          blog={blog}
+          handleLike={handleLike}
+          handleDelete={handleDelete}
           currentUser={user ? user.username : null}/>
       )}
 
       <div>
-        {user === null ? 
-          <LoginForm 
-            handleLogin={handleLogin} 
-            setUsername={setUsername} 
-            setPassword={setPassword}/> : 
+        {user === null ?
+          <LoginForm
+            handleLogin={handleLogin}
+            setUsername={setUsername}
+            setPassword={setPassword}/> :
 
           <div>
             <p>{user.name} logged in</p>
