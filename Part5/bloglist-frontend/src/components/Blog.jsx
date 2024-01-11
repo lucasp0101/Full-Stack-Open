@@ -23,9 +23,11 @@ const Blog = ({ blog, handleLike, handleDelete, currentUser }) => {
         <div style={styleContent}>
           {blog.title} <button onClick={toggleDetail}>Hide</button><br/>
           {blog.author} <br/>
-          {blog.likes} <button onClick={
-            () => handleLike({ ...blog })
-          }>Like</button><br/>
+          {blog.likes} 
+          <button 
+            onClick={() => handleLike({ ...blog })}
+            className='blogLikeButton'
+            >Like</button><br/>
           {blog.url}
           <br/>
           {/*Only show the delete button if the current user is the creator of the blog*/}
@@ -37,7 +39,9 @@ const Blog = ({ blog, handleLike, handleDelete, currentUser }) => {
 
   return (
     <div style={styleSection}>
-      {blog.title} <button onClick={toggleDetail}>Show</button>
+      {blog.title} <button onClick={toggleDetail}>Show</button> 
+      <br/>
+      {blog.author}
       <br/>
       {/*Only show the delete button if the current user is the creator of the blog*/}
       {blog.author === currentUser ? <button onClick={() => handleDelete(blog)}>Delete post</button> : <></>}
